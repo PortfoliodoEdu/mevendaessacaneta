@@ -1,0 +1,17 @@
+[Unit]
+Description=MeVendaEssaCaneta Backend API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/mevendaessacaneta/backend
+Environment="PATH=/var/www/mevendaessacaneta/backend/venv/bin"
+ExecStart=/var/www/mevendaessacaneta/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/www/mevendaessacaneta/logs/backend.log
+StandardError=append:/var/www/mevendaessacaneta/logs/backend.log
+
+[Install]
+WantedBy=multi-user.target

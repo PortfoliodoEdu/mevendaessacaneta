@@ -1,12 +1,32 @@
-import { Phone, MessageSquare, TrendingUp, Clock } from 'lucide-react';
+import { Phone, MessageSquare, TrendingUp, Clock, UserPlus, Repeat, History, Palette } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { useLeads } from '@/hooks/useLeads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, isToday, startOfWeek, endOfWeek, eachDayOfInterval, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BottomTray } from '@/components/BottomTray';
+import { Button } from '@/components/ui/button';
+import { PalettePicker, type PaletteId } from '@/components/PalettePicker';
 
 export default function Dashboard() {
   const { data: leads = [], isLoading } = useLeads();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [palette, setPalette] = useState<PaletteId>('p1');
+
+  useEffect(() => {
+    const key = 'mevenda.palette';
+    const saved = (window.localStorage.getItem(key) as PaletteId | null) || 'p1';
+    setPalette(saved);
+  }, []);
+
+  const applyPalette = (p: PaletteId) => {
+    const key = 'mevenda.palette';
+    setPalette(p);
+    window.localStorage.setItem(key, p);
+    document.documentElement.dataset.palette = p;
+  };
 
   // Métricas
   const allInteracoes = leads.flatMap(l => l.interacoes);
@@ -18,6 +38,9 @@ export default function Dashboard() {
 
   const ligacoesHoje = interacoesHoje.filter(i => i.tipo === 'ligacao').length;
   const mensagensHoje = interacoesHoje.filter(i => i.tipo === 'mensagem').length;
+  const novosContatosHoje = interacoesHoje.filter(i => i.numero_sequencia === 1).length;
+  const followUpsHoje = interacoesHoje.filter(i => i.numero_sequencia > 1).length;
+  const nuncaContatados = leads.filter(l => !(l.interacoes || []).some(i => i.data_realizada)).length;
 
   const taxaEngajamento = allInteracoes.length > 0
     ? Math.round((allInteracoes.filter(i => i.engajou).length / allInteracoes.length) * 100)
@@ -31,6 +54,17 @@ export default function Dashboard() {
         .map(i => ({ ...i, lead }))
     )
     .sort((a, b) => new Date(a.data_prevista!).getTime() - new Date(b.data_prevista!).getTime())
+    .slice(0, 5);
+
+  const leadsRecentes = leads
+    .map((lead) => {
+      const last = (lead.interacoes || [])
+        .filter((i) => i.data_realizada)
+        .sort((a, b) => new Date(b.data_realizada!).getTime() - new Date(a.data_realizada!).getTime())[0];
+      return { lead, last };
+    })
+    .filter((x) => !!x.last)
+    .sort((a, b) => new Date(b.last!.data_realizada!).getTime() - new Date(a.last!.data_realizada!).getTime())
     .slice(0, 5);
 
   // Atividade semanal
@@ -59,10 +93,17 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40 px-4 py-3">
-        <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          {format(hoje, "EEEE, d 'de' MMMM", { locale: ptBR })}
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              {format(hoje, "EEEE, d 'de' MMMM", { locale: ptBR })}
+            </p>
+          </div>
+          <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => setPaletteOpen(true)} aria-label="Cores">
+            <Palette className="h-5 w-5" />
+          </Button>
+        </div>
       </header>
 
       {/* Main content */}
@@ -113,6 +154,43 @@ export default function Dashboard() {
                     style={{ width: `${taxaEngajamento}%` }}
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <UserPlus className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{novosContatosHoje}</p>
+                  <p className="text-xs text-muted-foreground">Novos hoje</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
+                  <Repeat className="h-5 w-5 text-warning" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{followUpsHoje}</p>
+                  <p className="text-xs text-muted-foreground">Follow-ups hoje</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border col-span-2">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">Nunca contatados</div>
+                <div className="text-xl font-bold text-foreground">{nuncaContatados}</div>
               </div>
             </CardContent>
           </Card>
@@ -179,10 +257,74 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Interações recentes (com comentário e áudio) */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Interações recentes
+              </span>
+              <Link to="/atividade" className="text-xs text-primary">
+                Ver tudo
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {leadsRecentes.length > 0 ? (
+              <ul className="space-y-3">
+                {leadsRecentes.map(({ lead, last }) => (
+                  <li key={lead.id} className="space-y-2">
+                    <Link to={`/?lead=${lead.id}`} className="block">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {lead.nome || lead.whatsapp}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex-shrink-0">
+                          {format(parseISO(last!.data_realizada!), "dd/MM HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words max-h-10 overflow-hidden">
+                        {last!.comentarios || "—"}
+                      </p>
+                    </Link>
+                    {last!.audio_url ? (
+                      <audio controls src={last!.audio_url} className="w-full" />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Sem áudio</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhuma interação recente
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </main>
 
       {/* Bottom navigation */}
       <BottomNav />
+
+      {paletteOpen && (
+        <BottomTray heightVh={60}>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-foreground">Cores</h2>
+              <Button variant="ghost" onClick={() => setPaletteOpen(false)}>Fechar</Button>
+            </div>
+
+            <div className="text-sm text-muted-foreground">
+              Escolha uma dupla <span className="font-medium text-foreground">(pastel + neon)</span>.
+            </div>
+
+            <PalettePicker value={palette} onChange={applyPalette} />
+          </div>
+        </BottomTray>
+      )}
     </div>
   );
 }

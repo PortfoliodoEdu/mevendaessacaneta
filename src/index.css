@@ -8,7 +8,7 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 210 25% 98%;
     --foreground: 220 25% 10%;
 
     --card: 0 0% 100%;
@@ -17,7 +17,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 25% 10%;
 
-    --primary: 152 69% 40%;
+    /* Mais “dopamina”: um verde mais vivo, ainda profissional */
+    --primary: 152 78% 42%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 15% 93%;
@@ -26,7 +27,8 @@
     --muted: 210 15% 95%;
     --muted-foreground: 220 10% 50%;
 
-    --accent: 210 100% 52%;
+    /* Azul mais vibrante para ações secundárias/destaques */
+    --accent: 210 100% 56%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
@@ -42,9 +44,13 @@
 
     --border: 220 13% 90%;
     --input: 220 13% 90%;
-    --ring: 152 69% 40%;
+    --ring: 152 78% 42%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
+
+    /* Paleta “dopaminérgica” (pastel + neon) — default */
+    --fx-pastel: 210 95% 84%;
+    --fx-neon: 330 100% 58%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -57,31 +63,32 @@
   }
 
   .dark {
-    --background: 220 25% 8%;
+    /* Menos “preto chapado”: dark mode mais claro e com contraste confortável */
+    --background: 222 20% 12%;
     --foreground: 210 20% 95%;
 
-    --card: 220 25% 12%;
+    --card: 222 18% 16%;
     --card-foreground: 210 20% 95%;
 
-    --popover: 220 25% 12%;
+    --popover: 222 18% 16%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 152 69% 45%;
+    --primary: 152 78% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 18%;
+    --secondary: 222 16% 22%;
     --secondary-foreground: 210 20% 90%;
 
-    --muted: 220 20% 15%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 222 14% 20%;
+    --muted-foreground: 220 10% 70%;
 
-    --accent: 210 100% 55%;
+    --accent: 210 100% 62%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 69% 45%;
+    --success: 152 78% 52%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 55%;
@@ -89,20 +96,28 @@
 
     --recording: 0 84% 60%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 152 69% 45%;
+    --border: 222 14% 26%;
+    --input: 222 14% 26%;
+    --ring: 152 78% 52%;
 
-    --sidebar-background: 220 25% 10%;
+    --sidebar-background: 222 18% 14%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 152 69% 45%;
+    --sidebar-primary: 152 78% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent: 222 14% 20%;
     --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 152 69% 45%;
+    --sidebar-border: 222 14% 22%;
+    --sidebar-ring: 152 78% 52%;
   }
 }
+
+/* 6 pares (pastel + neon): 12 cores no total (6 pastel + 6 neon) */
+:root[data-palette="p1"] { --fx-pastel: 210 95% 84%; --fx-neon: 330 100% 58%; } /* Sky pastel + Neon pink */
+:root[data-palette="p2"] { --fx-pastel: 155 65% 82%; --fx-neon: 190 100% 55%; } /* Mint pastel + Neon cyan */
+:root[data-palette="p3"] { --fx-pastel: 45 95% 85%;  --fx-neon: 38 100% 55%;  } /* Lemon pastel + Neon orange */
+:root[data-palette="p4"] { --fx-pastel: 275 85% 88%; --fx-neon: 285 100% 62%; } /* Lavender pastel + Neon purple */
+:root[data-palette="p5"] { --fx-pastel: 350 90% 88%; --fx-neon: 0 100% 60%;   } /* Rose pastel + Neon red */
+:root[data-palette="p6"] { --fx-pastel: 120 55% 84%; --fx-neon: 152 95% 48%;  } /* Green pastel + Neon green */
 
 @layer base {
   * {
@@ -111,6 +126,14 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+  }
+
+  /* “Dopamina” suave: glow discreto no dark mode sem poluir */
+  .dark body {
+    background-image:
+      radial-gradient(900px 500px at 15% 0%, hsl(var(--fx-pastel) / 0.16), transparent 60%),
+      radial-gradient(900px 500px at 85% 10%, hsl(var(--fx-neon) / 0.14), transparent 55%);
+    background-attachment: fixed;
   }
 
   /* Safe area para iOS */
@@ -123,11 +146,113 @@
 }
 
 @layer utilities {
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Neon ring “dopaminérgico” (inspirado no seu repeating-conic-gradient)
+     Use em volta de botões/cards. Ex.: <div class="neon-ring"><button>...</button></div>
+     Para ativar/desativar, combine com classes condicionais no React. */
+  .neon-ring {
+    position: relative;
+    padding: 3px; /* espessura da borda */
+    border-radius: 9999px;
+    background: conic-gradient(
+      from var(--a),
+      hsl(var(--fx-neon)) 0%,
+      hsl(var(--fx-neon)) 10%,
+      transparent 10%,
+      transparent 45%,
+      hsl(var(--fx-neon)) 55%,
+      transparent 70%,
+      hsl(var(--fx-pastel)) 100%
+    );
+    animation: neon-spin 4s linear infinite;
+    filter: drop-shadow(0 8px 18px hsl(var(--fx-neon) / 0.18))
+      drop-shadow(0 8px 18px hsl(var(--fx-pastel) / 0.14));
+  }
+
+  /* camada interna para “recortar” o miolo e não colorir tudo */
+  .neon-ring::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 9999px;
+    background: hsl(var(--background));
+    opacity: 0.7; /* deixa o ring mais brilhante sem escurecer o centro */
+    pointer-events: none;
+  }
+
+  .neon-ring > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Preview de paleta (swatch) para o seletor de cores */
+  .palette-swatch {
+    background:
+      radial-gradient(120px 40px at 20% 50%, hsl(var(--fx-pastel) / 0.95), transparent 60%),
+      radial-gradient(120px 40px at 80% 50%, hsl(var(--fx-neon) / 0.85), transparent 60%),
+      linear-gradient(90deg, hsl(var(--fx-pastel) / 0.55), hsl(var(--fx-neon) / 0.55));
+    box-shadow:
+      0 10px 24px hsl(var(--fx-neon) / 0.12),
+      inset 0 0 0 1px hsl(var(--border));
+  }
+
+  /* Permite renderizar swatches de OUTRAS paletas sem trocar a paleta global:
+     o componente aplica data-palette no próprio swatch. */
+  .palette-swatch[data-palette="p1"] { --fx-pastel: 210 95% 84%; --fx-neon: 330 100% 58%; }
+  .palette-swatch[data-palette="p2"] { --fx-pastel: 155 65% 82%; --fx-neon: 190 100% 55%; }
+  .palette-swatch[data-palette="p3"] { --fx-pastel: 45 95% 85%;  --fx-neon: 38 100% 55%;  }
+  .palette-swatch[data-palette="p4"] { --fx-pastel: 275 85% 88%; --fx-neon: 285 100% 62%; }
+  .palette-swatch[data-palette="p5"] { --fx-pastel: 350 90% 88%; --fx-neon: 0 100% 60%;   }
+  .palette-swatch[data-palette="p6"] { --fx-pastel: 120 55% 84%; --fx-neon: 152 95% 48%;  }
+
+  /* Barras do "osciloscópio" do microfone
+     --level (0..1) controla o quanto as barras sobem. */
+  .audio-bar {
+    height: 22%;
+    animation: audio-bounce 900ms ease-in-out infinite;
+    transform: scaleY(calc(0.25 + (var(--level, 0) * 1.6)));
+  }
+
   .touch-manipulation {
     touch-action: manipulation;
   }
 
   .tap-highlight-none {
     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@keyframes audio-bounce {
+  0% {
+    opacity: 0.55;
+    transform: scaleY(calc(0.20 + (var(--level, 0) * 1.1)));
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(calc(0.45 + (var(--level, 0) * 2.1)));
+  }
+  100% {
+    opacity: 0.55;
+    transform: scaleY(calc(0.20 + (var(--level, 0) * 1.1)));
+  }
+}
+
+/* @property dá uma animação bem suave no conic-gradient.
+   Se o browser não suportar, ainda funciona (só sem a suavidade perfeita). */
+@property --a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes neon-spin {
+  0% {
+    --a: 0deg;
+  }
+  100% {
+    --a: 360deg;
   }
 }

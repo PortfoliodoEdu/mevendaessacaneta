@@ -1,0 +1,103 @@
+========================================
+  DEPLOY EM VPS LINUX
+========================================
+
+OPCAO 1: SETUP COMPLETO AUTOMATICO
+----------------------------------
+chmod +x scripts/*.sh
+./scripts/setup.sh
+
+OPCAO 2: SETUP MANUAL
+----------------------------------
+1. Instalar dependencias:
+   ./scripts/install.sh
+
+2. Configurar .env:
+   cp env.example .env
+   nano .env
+
+3. Instalar dependencias Python:
+   cd backend
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   deactivate
+   cd ..
+
+4. Instalar dependencias Node:
+   npm install
+
+5. Build frontend:
+   npm run build
+
+6. Iniciar:
+   ./scripts/start.sh
+
+OPCAO 3: DOCKER
+----------------------------------
+chmod +x scripts/build-docker.sh
+./scripts/build-docker.sh
+
+COMANDOS UTEIS
+----------------------------------
+Iniciar:     ./scripts/start.sh
+Parar:       ./scripts/stop.sh
+Reiniciar:   ./scripts/restart.sh
+Deploy:      ./scripts/deploy.sh
+
+SYSTEMD (RECOMENDADO PARA PRODUCAO)
+----------------------------------
+1. Configurar:
+   ./scripts/setup-systemd.sh
+
+2. Iniciar:
+   sudo systemctl start backend
+   sudo systemctl start frontend
+
+3. Habilitar inicio automatico:
+   sudo systemctl enable backend
+   sudo systemctl enable frontend
+
+4. Ver status:
+   sudo systemctl status backend
+   sudo systemctl status frontend
+
+5. Ver logs:
+   sudo journalctl -u backend -f
+   sudo journalctl -u frontend -f
+
+NGINX (REVERSE PROXY)
+----------------------------------
+1. Configurar:
+   ./scripts/setup-nginx.sh
+
+2. Testar:
+   sudo nginx -t
+
+3. Recarregar:
+   sudo systemctl reload nginx
+
+4. SSL (Let's Encrypt):
+   sudo apt-get install certbot python3-certbot-nginx
+   sudo certbot --nginx -d seu-dominio.com
+
+VARIAVEIS DE AMBIENTE (.env)
+----------------------------------
+VITE_SUPABASE_URL=          # URL do Supabase
+VITE_SUPABASE_PUBLISHABLE_KEY=  # Chave publica
+VITE_GEMINI_API_KEY=        # API Key do Gemini
+VITE_LOCAL_TRANSCRIBE_URL=  # http://localhost:8000
+VITE_LOCAL_VOSK_WS=         # ws://localhost:8000
+
+PORTA
+----------------------------------
+Backend:  8000
+Frontend: 8080
+Nginx:    80/443
+
+NOTAS
+----------------------------------
+- Supabase nao precisa de SQL local
+- Logs em: logs/backend.log e logs/frontend.log
+- Modelos Vosk sao baixados automaticamente
+- FFmpeg necessario para conversao de audio

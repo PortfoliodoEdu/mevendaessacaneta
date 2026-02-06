@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Leads from "./pages/Leads";
+import Planilha from "./pages/Planilha";
+import Atividade from "./pages/Atividade";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,13 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mediaQuery.removeEventListener('change', updateTheme);
   }, []);
 
+  // Paleta dopaminérgica (pastel + neon)
+  useEffect(() => {
+    const key = 'mevenda.palette';
+    const saved = window.localStorage.getItem(key) || 'p1';
+    document.documentElement.dataset.palette = saved;
+  }, []);
+
   return <>{children}</>;
 }
 
@@ -39,11 +48,18 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner position="top-center" />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/leads" element={<Leads />} />
+            <Route path="/planilha" element={<Planilha />} />
+            <Route path="/atividade" element={<Atividade />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

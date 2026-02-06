@@ -12,6 +12,28 @@ dist
 dist-ssr
 *.local
 
+# Secrets (NUNCA versionar)
+.env
+.env.*
+api key.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+*.pid
+
+# Modelos Vosk (grandes, baixar automaticamente)
+backend/models/vosk-model-*.zip
+backend/models/vosk-model-large-pt-0.3/
+backend/models/vosk-model-full-pt-0.3/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +44,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Docker
+.docker/
+
+# Systemd (não versionar configurações locais)
+*.service.local

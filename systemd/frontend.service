@@ -1,0 +1,17 @@
+[Unit]
+Description=MeVendaEssaCaneta Frontend
+After=network.target backend.service
+Requires=backend.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/mevendaessacaneta
+ExecStart=/usr/bin/npx serve -s dist -l 8080
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/www/mevendaessacaneta/logs/frontend.log
+StandardError=append:/var/www/mevendaessacaneta/logs/frontend.log
+
+[Install]
+WantedBy=multi-user.target
